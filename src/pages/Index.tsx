@@ -43,7 +43,7 @@ const Index = () => {
           <img
             src={logo}
             alt="Xiismo - Portal de conhecimento xiita"
-            className="mx-auto h-32 w-32 md:h-40 md:w-40 mb-8 shadow-glow object-fill border-0 rounded-none"
+            className="mx-auto h-32 w-32 md:h-40 md:w-40 mb-8 object-contain"
           />
           <h1 className="text-5xl md:text-7xl font-semibold text-balance mb-6">
             Xiismo
