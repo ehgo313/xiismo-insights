@@ -126,8 +126,22 @@ const Index = () => {
         )}
       </section>
 
+      {/* About */}
+      <section id="sobre" className="container pb-24">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <h2 className="text-3xl md:text-4xl font-semibold">Sobre</h2>
+          </div>
+          <div className="p-8 md:p-10 bg-card border border-border rounded-md">
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+              O portal Xiismo nasceu do desejo de centralizar e difundir o conhecimento, a espiritualidade e as ricas tradições dos Ahlul Bayt (a.s.). O projeto começou em 2024, quando criei um perfil dedicado a partilhar conteúdos e reflexões sobre o Islam Xiita. Agora, em 2026, com o objetivo de dar um passo mais além e facilitar o acesso à informação de qualidade para a comunidade, desenvolvi este site para reunir artigos e materiais de estudo num único espaço.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer id="sobre" className="border-t border-border/60 mt-16">
+      <footer className="border-t border-border/60">
         <div className="container py-10 text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center gap-2 mb-3">
             <img src={logo} alt="" className="h-6 w-6" />
