@@ -58,15 +58,17 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
     background-image:
-      radial-gradient(circle at 20% 10%, hsl(0 0% 14% / 0.6) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, hsl(0 0% 12% / 0.5) 0%, transparent 50%);
+      radial-gradient(circle at 15% 0%, hsl(0 0% 16% / 0.5) 0%, transparent 45%),
+      radial-gradient(circle at 85% 100%, hsl(0 0% 14% / 0.4) 0%, transparent 45%);
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    letter-spacing: -0.02em;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -0.035em;
+    font-weight: 600;
   }
 }
 
