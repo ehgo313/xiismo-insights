@@ -26,7 +26,7 @@ const Index = () => {
       <header className="border-b border-border/60 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo Xiismo" className="h-10 w-10 invert" />
+            <img src={logo} alt="Logo Xiismo" className="h-10 w-10" />
             <span className="text-2xl font-semibold tracking-tight">Xiismo</span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
@@ -43,7 +43,7 @@ const Index = () => {
           <img
             src={logo}
             alt="Xiismo - Portal de conhecimento xiita"
-            className="mx-auto h-32 w-32 md:h-40 md:w-40 invert mb-8 shadow-glow"
+            className="mx-auto h-32 w-32 md:h-40 md:w-40 mb-8 shadow-glow"
           />
           <h1 className="text-5xl md:text-7xl font-semibold text-balance mb-6">
             Xiismo
@@ -130,7 +130,7 @@ const Index = () => {
       <footer id="sobre" className="border-t border-border/60 mt-16">
         <div className="container py-10 text-center text-sm text-muted-foreground">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <img src={logo} alt="" className="h-6 w-6 invert opacity-70" />
+            <img src={logo} alt="" className="h-6 w-6" />
             <span className="font-semibold text-foreground">Xiismo</span>
           </div>
           <p>"Estou deixando entre vocês duas coisas pesadas: o Livro de Allah e minha família" — Hadith Thaqalain</p>
