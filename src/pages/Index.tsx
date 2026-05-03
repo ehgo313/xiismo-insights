@@ -1,23 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, MessageCircle, Hash, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/xiismo-logo.png";
 
-const ARTICLES = [
-  { title: "Quem foi o Imam Ali (a.s.)?", excerpt: "A vida e o legado do primeiro Imam dos xiitas, primo e genro do Profeta Muhammad (s.a.w.)." },
-  { title: "O Significado de Ashura", excerpt: "Compreendendo o martírio do Imam Hussein (a.s.) em Karbala e suas lições eternas." },
-  { title: "Os Doze Imames", excerpt: "Uma introdução à linhagem dos Ahlul Bayt e a doutrina da Imamah." },
-  { title: "Ghadir Khumm", excerpt: "O evento histórico em que o Profeta declarou Ali como seu sucessor." },
-  { title: "Taqiyya: Verdade e Mal-entendidos", excerpt: "Esclarecendo um dos conceitos mais debatidos da jurisprudência xiita." },
-  { title: "A Ocultação do Imam Mahdi (a.j.)", excerpt: "A crença na vinda do salvador prometido e o tempo da Ghaybah." },
-];
+type Article = { id: string; title: string; slug: string; excerpt: string | null };
 
 const Index = () => {
   const [query, setQuery] = useState("");
-  const filtered = ARTICLES.filter((a) =>
+  const [articles, setArticles] = useState<Article[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("articles")
+      .select("id, title, slug, excerpt")
+      .eq("published", true)
+      .order("published_at", { ascending: false })
+      .then(({ data }) => setArticles((data as Article[]) ?? []));
+  }, []);
+
+  const filtered = articles.filter((a) =>
     a.title.toLowerCase().includes(query.toLowerCase()) ||
-    a.excerpt.toLowerCase().includes(query.toLowerCase())
+    (a.excerpt ?? "").toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -107,9 +113,10 @@ const Index = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((article) => (
-              <article
-                key={article.title}
-                className="group p-6 bg-card border border-border rounded-md hover:border-foreground/40 transition-all hover:shadow-glow cursor-pointer"
+              <Link
+                to={`/artigo/${article.slug}`}
+                key={article.id}
+                className="group p-6 bg-card border border-border rounded-md hover:border-foreground/40 transition-all block"
               >
                 <h3 className="text-2xl font-semibold mb-3 group-hover:text-foreground transition-colors">
                   {article.title}
@@ -120,7 +127,7 @@ const Index = () => {
                 <span className="inline-block mt-4 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                   Ler artigo →
                 </span>
-              </article>
+              </Link>
             ))}
           </div>
         )}
