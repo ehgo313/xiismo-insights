@@ -107,9 +107,10 @@ const Index = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((article) => (
-              <article
-                key={article.title}
-                className="group p-6 bg-card border border-border rounded-md hover:border-foreground/40 transition-all hover:shadow-glow cursor-pointer"
+              <Link
+                to={`/artigo/${article.slug}`}
+                key={article.id}
+                className="group p-6 bg-card border border-border rounded-md hover:border-foreground/40 transition-all block"
               >
                 <h3 className="text-2xl font-semibold mb-3 group-hover:text-foreground transition-colors">
                   {article.title}
@@ -120,7 +121,7 @@ const Index = () => {
                 <span className="inline-block mt-4 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                   Ler artigo →
                 </span>
-              </article>
+              </Link>
             ))}
           </div>
         )}
