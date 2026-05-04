@@ -90,8 +90,8 @@ const Index = () => {
               size="lg"
               className="h-12 px-8 bg-whatsapp hover:bg-whatsapp/90 text-white"
             >
-              <a href="https://wa.me/" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="mr-2 h-5 w-5" />
+              <a href="https://whatsapp.com/channel/0029Vb7QkKRKGGGLsj37VQ0B" target="_blank" rel="noopener noreferrer">
+                <WhatsAppIcon className="mr-2 h-5 w-5" />
                 Canal no WhatsApp
               </a>
             </Button>
@@ -100,8 +100,8 @@ const Index = () => {
               size="lg"
               className="h-12 px-8 bg-discord hover:bg-discord/90 text-white"
             >
-              <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer">
-                <Hash className="mr-2 h-5 w-5" />
+              <a href="https://discord.gg/v2r6TRrq" target="_blank" rel="noopener noreferrer">
+                <DiscordIcon className="mr-2 h-5 w-5" />
                 Servidor no Discord
               </a>
             </Button>
