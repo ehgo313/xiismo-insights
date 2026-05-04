@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, LogOut } from "lucide-react";
+
+const ADMIN_PASSWORD = "Muhammad11_1213?";
+const STORAGE_KEY = "admin_unlocked";
 
 type Article = {
   id: string;
@@ -24,28 +27,14 @@ const slugify = (s: string) =>
 const empty: Omit<Article, "id"> = { title: "", slug: "", excerpt: "", content: "", published: true };
 
 const Admin = () => {
-  const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [unlocked, setUnlocked] = useState<boolean>(() => sessionStorage.getItem(STORAGE_KEY) === "1");
+  const [pwd, setPwd] = useState("");
   const [articles, setArticles] = useState<Article[]>([]);
   const [editing, setEditing] = useState<Article | (Omit<Article, "id"> & { id?: string }) | null>(null);
 
   useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        navigate("/auth");
-        return;
-      }
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.session.user.id);
-      const admin = roles?.some((r) => r.role === "admin") ?? false;
-      setIsAdmin(admin);
-      if (admin) await load();
-    };
-    init();
-  }, [navigate]);
+    if (unlocked) load();
+  }, [unlocked]);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -87,25 +76,37 @@ const Admin = () => {
     else { toast.success("Eliminado"); load(); }
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+  const tryUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwd === ADMIN_PASSWORD) {
+      sessionStorage.setItem(STORAGE_KEY, "1");
+      setUnlocked(true);
+    } else {
+      toast.error("Palavra-passe incorreta");
+    }
   };
 
-  if (isAdmin === null) return <div className="min-h-screen bg-hero p-10 text-muted-foreground">A carregar...</div>;
-  if (!isAdmin)
+  const lock = () => {
+    sessionStorage.removeItem(STORAGE_KEY);
+    setUnlocked(false);
+    setPwd("");
+  };
+
+  if (!unlocked) {
     return (
-      <div className="min-h-screen bg-hero p-10 max-w-2xl mx-auto">
-        <h1 className="text-3xl font-semibold mb-4">Sem permissões</h1>
-        <p className="text-muted-foreground mb-6">
-          A tua conta não tem acesso de administrador. Pede ao dono do site para te promover (no painel da Lovable Cloud, tabela <code>user_roles</code>, adiciona uma linha com o teu user_id e role = <code>admin</code>).
-        </p>
-        <div className="flex gap-3">
-          <Button onClick={logout} variant="outline">Sair</Button>
-          <Button asChild><Link to="/">Voltar ao site</Link></Button>
-        </div>
+      <div className="min-h-screen bg-hero flex items-center justify-center p-6">
+        <form onSubmit={tryUnlock} className="w-full max-w-md bg-card border border-border rounded-md p-8 space-y-4">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Voltar</Link>
+          <h1 className="text-3xl font-semibold">Admin</h1>
+          <div>
+            <Label htmlFor="pwd">Palavra-passe</Label>
+            <Input id="pwd" type="password" autoFocus value={pwd} onChange={(e) => setPwd(e.target.value)} />
+          </div>
+          <Button type="submit" className="w-full">Entrar</Button>
+        </form>
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-hero">
@@ -114,7 +115,7 @@ const Admin = () => {
           <h1 className="text-2xl font-semibold">Admin · Artigos</h1>
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm"><Link to="/">Ver site</Link></Button>
-            <Button onClick={logout} variant="outline" size="sm"><LogOut className="h-4 w-4 mr-2" />Sair</Button>
+            <Button onClick={lock} variant="outline" size="sm"><LogOut className="h-4 w-4 mr-2" />Sair</Button>
           </div>
         </div>
       </header>
