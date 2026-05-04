@@ -49,7 +49,7 @@ const Index = () => {
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#artigos" className="hover:text-foreground transition-colors">Artigos</a>
-            <a href="#comunidade" className="hover:text-foreground transition-colors">Comunidade</a>
+            
             <a href="#sobre" className="hover:text-foreground transition-colors">Sobre</a>
           </nav>
         </div>
