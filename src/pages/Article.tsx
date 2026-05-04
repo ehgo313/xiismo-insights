@@ -59,8 +59,21 @@ const Article = () => {
             {article.excerpt && (
               <p className="text-xl text-muted-foreground mb-10 leading-relaxed">{article.excerpt}</p>
             )}
-            <div className="prose prose-invert max-w-none whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
-              {article.content}
+            <div className="max-w-none text-base leading-relaxed text-foreground/90 space-y-4">
+              {article.content.split("\n").map((line, i) => {
+                const h = line.match(/^(#{1,6})\s+(.*)$/);
+                if (h) {
+                  const level = h[1].length;
+                  const sizes = ["text-4xl", "text-3xl", "text-2xl", "text-xl", "text-lg", "text-base"];
+                  return (
+                    <p key={i} className={`${sizes[level - 1]} font-bold text-foreground mt-8 mb-2`}>
+                      {h[2]}
+                    </p>
+                  );
+                }
+                if (line.trim() === "") return <div key={i} className="h-2" />;
+                return <p key={i} className="whitespace-pre-wrap">{line}</p>;
+              })}
             </div>
           </article>
         )}
