@@ -267,7 +267,13 @@ const Admin = () => {
             </div>
             <div>
               <Label>Religião</Label>
-              <Input value={editingProfile.religion ?? ""} onChange={(e) => setEditingProfile({ ...editingProfile, religion: e.target.value })} />
+              <Select value={editingProfile.religion || "__none"} onValueChange={(v) => setEditingProfile({ ...editingProfile, religion: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Nenhuma</SelectItem>
+                  {RELIGIONS.map((r) => <SelectItem key={r.name} value={r.name}><span style={{ color: r.color }}>{r.symbol}</span> {r.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Descrição</Label>
