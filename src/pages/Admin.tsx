@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, LogOut } from "lucide-react";
+import { RELIGIONS } from "@/lib/profileMeta";
 
 const ADMIN_PASSWORD = "Muhammad11_1213?";
 const STORAGE_KEY = "admin_unlocked";
