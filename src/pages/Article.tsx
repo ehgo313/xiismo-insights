@@ -2,32 +2,48 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/xiismo-logo.png";
+import { renderArticleBody, renderInline } from "@/lib/articleContent";
 
 type Article = {
   title: string;
   excerpt: string | null;
   content: string;
   published_at: string;
+  author_username: string | null;
+  references_footer: string | null;
 };
+
+type Author = { username: string; display_name: string; avatar_url: string | null; role: string };
 
 const Article = () => {
   const { slug } = useParams();
   const [article, setArticle] = useState<Article | null>(null);
+  const [author, setAuthor] = useState<Author | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!slug) return;
-    supabase
-      .from("articles")
-      .select("title, excerpt, content, published_at")
-      .eq("slug", slug)
-      .eq("published", true)
-      .maybeSingle()
-      .then(({ data }) => {
-        setArticle(data as Article | null);
-        setLoading(false);
-        if (data) document.title = `${data.title} · Xiismo`;
-      });
+    (async () => {
+      const { data } = await supabase
+        .from("articles")
+        .select("title, excerpt, content, published_at, author_username, references_footer")
+        .eq("slug", slug)
+        .eq("published", true)
+        .maybeSingle();
+      setArticle(data as Article | null);
+      setLoading(false);
+      if (data) {
+        document.title = `${data.title} · Xiismo`;
+        if ((data as Article).author_username) {
+          const { data: p } = await supabase
+            .from("profiles")
+            .select("username, display_name, avatar_url, role")
+            .eq("username", (data as Article).author_username!)
+            .maybeSingle();
+          setAuthor(p as Author | null);
+        }
+      }
+    })();
   }, [slug]);
 
   return (
@@ -53,28 +69,33 @@ const Article = () => {
         ) : (
           <article>
             <h1 className="text-4xl md:text-5xl font-semibold mb-4 text-balance">{article.title}</h1>
-            <p className="text-sm text-muted-foreground mb-10">
-              {new Date(article.published_at).toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" })}
-            </p>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-10">
+              {author && (
+                <Link to={`/${author.username}`} className="flex items-center gap-2 hover:text-foreground">
+                  {author.avatar_url && <img src={author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />}
+                  <span>{author.display_name}</span>
+                </Link>
+              )}
+              {author && <span>·</span>}
+              <span>{new Date(article.published_at).toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" })}</span>
+            </div>
             {article.excerpt && (
               <p className="text-xl text-muted-foreground mb-10 leading-relaxed">{article.excerpt}</p>
             )}
             <div className="max-w-none text-base leading-relaxed text-foreground/90 space-y-4">
-              {article.content.split("\n").map((line, i) => {
-                const h = line.match(/^(#{1,6})\s+(.*)$/);
-                if (h) {
-                  const level = h[1].length;
-                  const sizes = ["text-4xl", "text-3xl", "text-2xl", "text-xl", "text-lg", "text-base"];
-                  return (
-                    <p key={i} className={`${sizes[level - 1]} font-bold text-foreground mt-8 mb-2`}>
-                      {h[2]}
-                    </p>
-                  );
-                }
-                if (line.trim() === "") return <div key={i} className="h-2" />;
-                return <p key={i} className="whitespace-pre-wrap">{line}</p>;
-              })}
+              {renderArticleBody(article.content)}
             </div>
+
+            {article.references_footer && article.references_footer.trim() && (
+              <footer className="mt-16 pt-6 border-t border-border/60">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Referências</h2>
+                <div className="text-xs text-muted-foreground/90 leading-relaxed space-y-2">
+                  {article.references_footer.split("\n").map((line, i) =>
+                    line.trim() === "" ? <div key={i} className="h-1" /> : <p key={i}>{renderInline(line)}</p>
+                  )}
+                </div>
+              </footer>
+            )}
           </article>
         )}
       </main>
