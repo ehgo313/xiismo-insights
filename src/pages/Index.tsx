@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/xiismo-logo.png";
 
-type Article = { id: string; title: string; slug: string; excerpt: string | null };
+type Article = { id: string; title: string; slug: string; excerpt: string | null; featured: boolean };
 
 const Index = () => {
   const [query, setQuery] = useState("");
@@ -27,13 +27,14 @@ const Index = () => {
   useEffect(() => {
     supabase
       .from("articles")
-      .select("id, title, slug, excerpt")
+      .select("id, title, slug, excerpt, featured")
       .eq("published", true)
       .order("published_at", { ascending: false })
       .then(({ data }) => setArticles((data as Article[]) ?? []));
   }, []);
 
-  const filtered = articles.filter((a) =>
+  const visible = query ? articles : articles.filter((a) => a.featured);
+  const filtered = visible.filter((a) =>
     a.title.toLowerCase().includes(query.toLowerCase()) ||
     (a.excerpt ?? "").toLowerCase().includes(query.toLowerCase())
   );
