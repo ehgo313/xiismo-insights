@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, LogOut } from "lucide-react";
+import { RELIGIONS } from "@/lib/profileMeta";
 
 const ADMIN_PASSWORD = "Muhammad11_1213?";
 const STORAGE_KEY = "admin_unlocked";
@@ -266,7 +267,13 @@ const Admin = () => {
             </div>
             <div>
               <Label>Religião</Label>
-              <Input value={editingProfile.religion ?? ""} onChange={(e) => setEditingProfile({ ...editingProfile, religion: e.target.value })} />
+              <Select value={editingProfile.religion || "__none"} onValueChange={(v) => setEditingProfile({ ...editingProfile, religion: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Nenhuma</SelectItem>
+                  {RELIGIONS.map((r) => <SelectItem key={r.name} value={r.name}><span style={{ color: r.color }}>{r.symbol}</span> {r.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Descrição</Label>

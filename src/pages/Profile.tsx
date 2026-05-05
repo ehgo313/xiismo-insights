@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/xiismo-logo.png";
+import { getReligion, getRoleColor } from "@/lib/profileMeta";
 
 type Profile = {
   username: string;
@@ -43,6 +44,10 @@ const Profile = () => {
     })();
   }, [username]);
 
+  const religion = getReligion(profile?.religion);
+  const roleColor = getRoleColor(profile?.role);
+  const showArticles = profile && profile.role !== "Membro";
+
   return (
     <div className="min-h-screen bg-hero">
       <header className="border-b border-border/60 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
@@ -55,7 +60,7 @@ const Profile = () => {
         </div>
       </header>
 
-      <main className="container py-16 max-w-3xl">
+      <main className="container py-16 max-w-2xl">
         {loading ? (
           <p className="text-muted-foreground">A carregar...</p>
         ) : !profile ? (
@@ -65,38 +70,74 @@ const Profile = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-12">
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.display_name} className="h-32 w-32 rounded-full object-cover border border-border" />
-              ) : (
-                <div className="h-32 w-32 rounded-full bg-card border border-border flex items-center justify-center text-3xl text-muted-foreground">
-                  {profile.display_name.charAt(0)}
+            <div
+              className="relative rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 overflow-hidden"
+              style={{ boxShadow: `0 0 80px -20px ${roleColor}40` }}
+            >
+              <div
+                className="absolute inset-x-0 top-0 h-24"
+                style={{ background: `linear-gradient(135deg, ${roleColor}30, transparent 70%)` }}
+              />
+              <div className="relative flex flex-col items-center text-center">
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.display_name}
+                    className="h-28 w-28 rounded-full object-cover border-4"
+                    style={{ borderColor: roleColor }}
+                  />
+                ) : (
+                  <div
+                    className="h-28 w-28 rounded-full bg-background border-4 flex items-center justify-center text-3xl font-semibold"
+                    style={{ borderColor: roleColor }}
+                  >
+                    {profile.display_name.charAt(0)}
+                  </div>
+                )}
+                <h1 className="mt-4 text-2xl font-semibold tracking-tight">{profile.display_name}</h1>
+                <p className="text-sm text-muted-foreground">@{profile.username}</p>
+
+                <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                  <span
+                    className="text-xs font-medium px-3 py-1 rounded-full border"
+                    style={{ color: roleColor, borderColor: `${roleColor}66`, background: `${roleColor}14` }}
+                  >
+                    {profile.role}
+                  </span>
+                  {religion && (
+                    <span
+                      className="text-xs font-medium px-3 py-1 rounded-full border inline-flex items-center gap-1.5"
+                      style={{ color: religion.color, borderColor: `${religion.color}66`, background: `${religion.color}14` }}
+                    >
+                      <span aria-hidden>{religion.symbol}</span>
+                      {religion.name}
+                    </span>
+                  )}
                 </div>
-              )}
-              <div className="text-center sm:text-left">
-                <h1 className="text-3xl font-semibold">{profile.display_name}</h1>
-                <p className="text-muted-foreground">@{profile.username}</p>
-                <div className="mt-2 flex flex-wrap gap-2 justify-center sm:justify-start">
-                  <span className="text-xs px-2 py-1 rounded bg-card border border-border">{profile.role}</span>
-                  {profile.religion && <span className="text-xs px-2 py-1 rounded bg-card border border-border">{profile.religion}</span>}
-                </div>
+
                 {profile.description && (
-                  <p className="mt-4 text-muted-foreground leading-relaxed max-w-xl">{profile.description}</p>
+                  <p className="mt-5 text-sm text-muted-foreground leading-relaxed max-w-md whitespace-pre-line">
+                    {profile.description}
+                  </p>
                 )}
               </div>
             </div>
 
-            <h2 className="text-2xl font-semibold mb-4">Artigos escritos ({articles.length})</h2>
-            {articles.length === 0 ? (
-              <p className="text-muted-foreground">Nenhum artigo ainda.</p>
-            ) : (
-              <div className="space-y-3">
-                {articles.map((a) => (
-                  <Link key={a.id} to={`/artigo/${a.slug}`} className="block p-4 bg-card border border-border rounded-md hover:border-foreground/40">
-                    <h3 className="font-semibold">{a.title}</h3>
-                    {a.excerpt && <p className="text-sm text-muted-foreground mt-1">{a.excerpt}</p>}
-                  </Link>
-                ))}
+            {showArticles && (
+              <div className="mt-12">
+                <h2 className="text-xl font-semibold mb-4">Artigos escritos ({articles.length})</h2>
+                {articles.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">Nenhum artigo ainda.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {articles.map((a) => (
+                      <Link key={a.id} to={`/artigo/${a.slug}`} className="block p-4 bg-card border border-border rounded-md hover:border-foreground/40">
+                        <h3 className="font-semibold">{a.title}</h3>
+                        {a.excerpt && <p className="text-sm text-muted-foreground mt-1">{a.excerpt}</p>}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>
