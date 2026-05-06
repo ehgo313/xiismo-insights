@@ -66,8 +66,12 @@ export type Database = {
           description: string | null
           display_name: string
           id: string
+          instagram: string | null
+          profile_color: string | null
           religion: string | null
           role: string
+          tiktok: string | null
+          twitter: string | null
           updated_at: string
           username: string
         }
@@ -77,8 +81,12 @@ export type Database = {
           description?: string | null
           display_name: string
           id?: string
+          instagram?: string | null
+          profile_color?: string | null
           religion?: string | null
           role?: string
+          tiktok?: string | null
+          twitter?: string | null
           updated_at?: string
           username: string
         }
@@ -88,8 +96,12 @@ export type Database = {
           description?: string | null
           display_name?: string
           id?: string
+          instagram?: string | null
+          profile_color?: string | null
           religion?: string | null
           role?: string
+          tiktok?: string | null
+          twitter?: string | null
           updated_at?: string
           username?: string
         }
