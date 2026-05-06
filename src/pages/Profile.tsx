@@ -4,7 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/xiismo-logo.png";
 import { getReligion, DEFAULT_PROFILE_COLOR } from "@/lib/profileMeta";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Instagram, Twitter } from "lucide-react";
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.71a8.16 8.16 0 0 0 4.77 1.52V6.78a4.85 4.85 0 0 1-1.84-.09Z" />
+  </svg>
+);
 
 type Profile = {
   username: string;
@@ -59,10 +65,10 @@ const Profile = () => {
 
   const socials = profile
     ? [
-        profile.instagram && { name: "Instagram", handle: stripHandle(profile.instagram), url: `https://instagram.com/${stripHandle(profile.instagram)}` },
-        profile.tiktok && { name: "TikTok", handle: stripHandle(profile.tiktok), url: `https://tiktok.com/@${stripHandle(profile.tiktok)}` },
-        profile.twitter && { name: "Twitter", handle: stripHandle(profile.twitter), url: `https://twitter.com/${stripHandle(profile.twitter)}` },
-      ].filter(Boolean) as { name: string; handle: string; url: string }[]
+        profile.instagram && { name: "Instagram", Icon: Instagram, url: `https://instagram.com/${stripHandle(profile.instagram)}` },
+        profile.tiktok && { name: "TikTok", Icon: TikTokIcon, url: `https://tiktok.com/@${stripHandle(profile.tiktok)}` },
+        profile.twitter && { name: "Twitter", Icon: Twitter, url: `https://twitter.com/${stripHandle(profile.twitter)}` },
+      ].filter(Boolean) as { name: string; Icon: React.ComponentType<{ className?: string }>; url: string }[]
     : [];
 
   return (
@@ -87,14 +93,7 @@ const Profile = () => {
           </div>
         ) : (
           <>
-            <div
-              className="relative rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 overflow-hidden"
-              style={{ boxShadow: `0 0 80px -20px ${color}40` }}
-            >
-              <div
-                className="absolute inset-x-0 top-0 h-24"
-                style={{ background: `linear-gradient(135deg, ${color}30, transparent 70%)` }}
-              />
+            <div className="relative">
               <div className="relative flex flex-col items-center text-center">
                 {profile.avatar_url ? (
                   <img
@@ -140,17 +139,18 @@ const Profile = () => {
                 )}
 
                 {socials.length > 0 && (
-                  <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                  <div className="mt-5 flex gap-3 justify-center">
                     {socials.map((s) => (
                       <a
                         key={s.name}
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs px-3 py-1 rounded-full border border-border bg-background/40 hover:bg-background/70 transition"
+                        aria-label={s.name}
+                        className="h-10 w-10 rounded-full border border-border bg-background/40 hover:bg-background/70 transition flex items-center justify-center"
                         style={{ color }}
                       >
-                        {s.name}: @{s.handle}
+                        <s.Icon className="h-5 w-5" />
                       </a>
                     ))}
                   </div>
