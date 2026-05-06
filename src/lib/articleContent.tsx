@@ -10,7 +10,9 @@ export const renderInline = (text: string): React.ReactNode[] => {
   let i = 0;
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) out.push(text.slice(last, m.index));
-    const url = m[2].match(/^https?:\/\//) ? m[2] : `https://${m[2]}`;
+    const label = m[1] ?? m[3];
+    const rawUrl = m[2] ?? m[4];
+    const url = rawUrl.match(/^https?:\/\//) ? rawUrl : `https://${rawUrl}`;
     out.push(
       <a
         key={`l-${i++}`}
@@ -19,7 +21,7 @@ export const renderInline = (text: string): React.ReactNode[] => {
         rel="noopener noreferrer"
         className="text-green-500 hover:text-green-400 underline underline-offset-2"
       >
-        {m[1]}
+        {label}
       </a>
     );
     last = m.index + m[0].length;
