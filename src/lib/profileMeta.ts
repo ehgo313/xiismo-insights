@@ -1,5 +1,7 @@
 import judeu from "@/assets/religions/judeu.png";
 import babista from "@/assets/religions/babista.png";
+import islamSunita from "@/assets/religions/islam-sunita.png";
+import islamXiita from "@/assets/religions/islam-xiita.png";
 import cristaoOutro from "@/assets/religions/cristao-outro.png";
 import cristaoProtestante from "@/assets/religions/cristao-protestante.png";
 import cristaoOrtodoxo from "@/assets/religions/cristao-ortodoxo.png";
@@ -12,8 +14,8 @@ import islamIbadi from "@/assets/religions/islam-ibadi.png";
 export type Religion = { name: string; symbol: string; image?: string; color: string };
 
 export const RELIGIONS: Religion[] = [
-  { name: "Islam (Xiita)", symbol: "☪︎", color: "#10b981" },
-  { name: "Islam (Sunita)", symbol: "☪︎", color: "#059669" },
+  { name: "Islam (Xiita)", symbol: "☪︎", image: islamXiita, color: "#3b82f6" },
+  { name: "Islam (Sunita)", symbol: "☪︎", image: islamSunita, color: "#16a34a" },
   { name: "Islam (Ibadi)", symbol: "☪︎", image: islamIbadi, color: "#eab308" },
   { name: "Islam (Outro)", symbol: "☪︎", image: islamOutro, color: "#f97316" },
   { name: "Cristão (Protestante)", symbol: "✝", image: cristaoProtestante, color: "#0ea5e9" },
