@@ -194,7 +194,7 @@ const Admin = () => {
             </div>
             <div>
               <Label>Conteúdo</Label>
-              <p className="text-xs text-muted-foreground mb-1">Use # para títulos. Para link clicável: <code>palavra[exemplo.com]</code></p>
+              <p className="text-xs text-muted-foreground mb-1">Use # para títulos. Link clicável: <code>palavra[exemplo.com]</code> ou frase: <code>(frase aqui[exemplo.com])</code></p>
               <Textarea rows={16} value={editingArticle.content} onChange={(e) => setEditingArticle({ ...editingArticle, content: e.target.value })} className="font-mono text-sm" />
             </div>
             <div>
@@ -276,9 +276,52 @@ const Admin = () => {
                 <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none">Nenhuma</SelectItem>
-                  {RELIGIONS.map((r) => <SelectItem key={r.name} value={r.name}><span style={{ color: r.color }}>{r.symbol}</span> {r.name}</SelectItem>)}
+                  {RELIGIONS.map((r) => (
+                    <SelectItem key={r.name} value={r.name}>
+                      <span className="inline-flex items-center gap-2">
+                        {r.image ? (
+                          <img src={r.image} alt="" className="h-3.5 w-3.5 object-contain" />
+                        ) : (
+                          <span style={{ color: r.color }}>{r.symbol}</span>
+                        )}
+                        {r.name}
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Cor do perfil</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {PROFILE_COLORS.map((c) => {
+                  const selected = (editingProfile.profile_color || DEFAULT_PROFILE_COLOR) === c.value;
+                  return (
+                    <button
+                      key={c.value}
+                      type="button"
+                      title={c.name}
+                      onClick={() => setEditingProfile({ ...editingProfile, profile_color: c.value })}
+                      className={`h-8 w-8 rounded-full border-2 transition ${selected ? "ring-2 ring-offset-2 ring-offset-background ring-foreground" : "border-border"}`}
+                      style={{ background: c.value, borderColor: selected ? c.value : undefined }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <Label>Instagram (user)</Label>
+                <Input placeholder="ex: meuuser" value={editingProfile.instagram ?? ""} onChange={(e) => setEditingProfile({ ...editingProfile, instagram: e.target.value })} />
+              </div>
+              <div>
+                <Label>TikTok (user)</Label>
+                <Input placeholder="ex: meuuser" value={editingProfile.tiktok ?? ""} onChange={(e) => setEditingProfile({ ...editingProfile, tiktok: e.target.value })} />
+              </div>
+              <div>
+                <Label>Twitter (user)</Label>
+                <Input placeholder="ex: meuuser" value={editingProfile.twitter ?? ""} onChange={(e) => setEditingProfile({ ...editingProfile, twitter: e.target.value })} />
+              </div>
             </div>
             <div>
               <Label>Descrição</Label>
