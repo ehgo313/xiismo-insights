@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, LogOut } from "lucide-react";
-import { RELIGIONS } from "@/lib/profileMeta";
+import { RELIGIONS, PROFILE_COLORS, DEFAULT_PROFILE_COLOR } from "@/lib/profileMeta";
 
 const ADMIN_PASSWORD = "Muhammad11_1213?";
 const STORAGE_KEY = "admin_unlocked";
@@ -34,6 +34,10 @@ type Profile = {
   role: string;
   description: string | null;
   religion: string | null;
+  profile_color: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  twitter: string | null;
 };
 
 const slugify = (s: string) =>
@@ -46,6 +50,7 @@ const emptyArticle: Omit<Article, "id"> = {
 };
 const emptyProfile: Omit<Profile, "id"> = {
   username: "", display_name: "", avatar_url: null, role: "Membro", description: "", religion: "",
+  profile_color: DEFAULT_PROFILE_COLOR, tiktok: "", instagram: "", twitter: "",
 };
 
 const Admin = () => {
