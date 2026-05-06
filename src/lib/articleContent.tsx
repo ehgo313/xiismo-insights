@@ -3,7 +3,8 @@ import React from "react";
 // Renders inline tokens: word[url] -> green link
 export const renderInline = (text: string): React.ReactNode[] => {
   const out: React.ReactNode[] = [];
-  const re = /([^\s\[\]]+)\[([^\]]+)\]/g;
+  // Matches (phrase aqui[url]) for multi-word, or word[url] for single word
+  const re = /\(([^()\[\]]+)\[([^\]]+)\]\)|([^\s\(\)\[\]]+)\[([^\]]+)\]/g;
   let last = 0;
   let m: RegExpExecArray | null;
   let i = 0;
