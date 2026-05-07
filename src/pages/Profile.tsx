@@ -50,7 +50,7 @@ const Profile = () => {
         const { data: arts } = await supabase
           .from("articles")
           .select("id, title, slug, excerpt")
-          .eq("author_username", username)
+          .or(`author_username.eq.${username},author_username_2.eq.${username},author_username_3.eq.${username}`)
           .eq("published", true)
           .order("published_at", { ascending: false });
         setArticles((arts as Article[]) ?? []);
