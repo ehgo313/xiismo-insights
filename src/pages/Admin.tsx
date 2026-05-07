@@ -23,6 +23,8 @@ type Article = {
   published: boolean;
   featured: boolean;
   author_username: string | null;
+  author_username_2: string | null;
+  author_username_3: string | null;
   references_footer: string | null;
 };
 
@@ -46,7 +48,7 @@ const slugify = (s: string) =>
 
 const emptyArticle: Omit<Article, "id"> = {
   title: "", slug: "", excerpt: "", content: "", published: true, featured: false,
-  author_username: null, references_footer: "",
+  author_username: null, author_username_2: null, author_username_3: null, references_footer: "",
 };
 const emptyProfile: Omit<Profile, "id"> = {
   username: "", display_name: "", avatar_url: null, role: "Membro", description: "", religion: "",
@@ -81,7 +83,10 @@ const Admin = () => {
     const payload = {
       title: a.title, slug: a.slug || slugify(a.title), excerpt: a.excerpt,
       content: a.content, published: a.published, featured: a.featured,
-      author_username: a.author_username || null, references_footer: a.references_footer || null,
+      author_username: a.author_username || null,
+      author_username_2: a.author_username_2 || null,
+      author_username_3: a.author_username_3 || null,
+      references_footer: a.references_footer || null,
     };
     const { error } = a.id
       ? await supabase.from("articles").update(payload).eq("id", a.id)
@@ -178,16 +183,22 @@ const Admin = () => {
               <Label>Slug (URL)</Label>
               <Input value={editingArticle.slug} onChange={(e) => setEditingArticle({ ...editingArticle, slug: slugify(e.target.value) })} />
             </div>
-            <div>
-              <Label>Autor (username)</Label>
-              <Select value={editingArticle.author_username ?? "__none"} onValueChange={(v) => setEditingArticle({ ...editingArticle, author_username: v === "__none" ? null : v })}>
-                <SelectTrigger><SelectValue placeholder="Sem autor" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">Sem autor</SelectItem>
-                  {profiles.map((p) => <SelectItem key={p.id} value={p.username}>{p.display_name} (@{p.username})</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {([
+              ["author_username", "Autor 1 (username)"],
+              ["author_username_2", "Autor 2 (opcional)"],
+              ["author_username_3", "Autor 3 (opcional)"],
+            ] as const).map(([key, label]) => (
+              <div key={key}>
+                <Label>{label}</Label>
+                <Select value={(editingArticle as any)[key] ?? "__none"} onValueChange={(v) => setEditingArticle({ ...editingArticle, [key]: v === "__none" ? null : v } as any)}>
+                  <SelectTrigger><SelectValue placeholder="Sem autor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Sem autor</SelectItem>
+                    {profiles.map((p) => <SelectItem key={p.id} value={p.username}>{p.display_name} (@{p.username})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
             <div>
               <Label>Resumo</Label>
               <Textarea rows={2} value={editingArticle.excerpt ?? ""} onChange={(e) => setEditingArticle({ ...editingArticle, excerpt: e.target.value })} />
