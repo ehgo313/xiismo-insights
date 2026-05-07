@@ -1,0 +1,1 @@
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS author_username_2 text, ADD COLUMN IF NOT EXISTS author_username_3 text;

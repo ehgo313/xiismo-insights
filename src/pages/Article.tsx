@@ -10,6 +10,8 @@ type Article = {
   content: string;
   published_at: string;
   author_username: string | null;
+  author_username_2: string | null;
+  author_username_3: string | null;
   references_footer: string | null;
 };
 
@@ -18,7 +20,7 @@ type Author = { username: string; display_name: string; avatar_url: string | nul
 const Article = () => {
   const { slug } = useParams();
   const [article, setArticle] = useState<Article | null>(null);
-  const [author, setAuthor] = useState<Author | null>(null);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ const Article = () => {
     (async () => {
       const { data } = await supabase
         .from("articles")
-        .select("title, excerpt, content, published_at, author_username, references_footer")
+        .select("title, excerpt, content, published_at, author_username, author_username_2, author_username_3, references_footer")
         .eq("slug", slug)
         .eq("published", true)
         .maybeSingle();
@@ -34,13 +36,16 @@ const Article = () => {
       setLoading(false);
       if (data) {
         document.title = `${data.title} · Xiismo`;
-        if ((data as Article).author_username) {
-          const { data: p } = await supabase
+        const d = data as Article;
+        const usernames = [d.author_username, d.author_username_2, d.author_username_3].filter(Boolean) as string[];
+        if (usernames.length) {
+          const { data: ps } = await supabase
             .from("profiles")
             .select("username, display_name, avatar_url, role")
-            .eq("username", (data as Article).author_username!)
-            .maybeSingle();
-          setAuthor(p as Author | null);
+            .in("username", usernames);
+          const list = (ps as Author[]) ?? [];
+          // preserve ordering
+          setAuthors(usernames.map((u) => list.find((a) => a.username === u)).filter(Boolean) as Author[]);
         }
       }
     })();
@@ -69,14 +74,17 @@ const Article = () => {
         ) : (
           <article>
             <h1 className="text-4xl md:text-5xl font-semibold mb-4 text-balance">{article.title}</h1>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-10">
-              {author && (
-                <Link to={`/${author.username}`} className="flex items-center gap-2 hover:text-foreground">
-                  {author.avatar_url && <img src={author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />}
-                  <span>{author.display_name}</span>
-                </Link>
-              )}
-              {author && <span>·</span>}
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-10 flex-wrap">
+              {authors.map((a, idx) => (
+                <span key={a.username} className="flex items-center gap-2">
+                  <Link to={`/${a.username}`} className="flex items-center gap-2 hover:text-foreground">
+                    {a.avatar_url && <img src={a.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />}
+                    <span>{a.display_name}</span>
+                  </Link>
+                  {idx < authors.length - 1 && <span>,</span>}
+                </span>
+              ))}
+              {authors.length > 0 && <span>·</span>}
               <span>{new Date(article.published_at).toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" })}</span>
             </div>
             {article.excerpt && (

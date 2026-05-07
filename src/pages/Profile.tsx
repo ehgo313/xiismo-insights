@@ -50,7 +50,7 @@ const Profile = () => {
         const { data: arts } = await supabase
           .from("articles")
           .select("id, title, slug, excerpt")
-          .eq("author_username", username)
+          .or(`author_username.eq.${username},author_username_2.eq.${username},author_username_3.eq.${username}`)
           .eq("published", true)
           .order("published_at", { ascending: false });
         setArticles((arts as Article[]) ?? []);
@@ -120,12 +120,26 @@ const Profile = () => {
                   {religion && (
                     <span
                       className="text-xs font-medium px-3 py-1 rounded-full border inline-flex items-center gap-1.5"
-                      style={{ color: religion.color, borderColor: `${religion.color}66`, background: `${religion.color}14` }}
+                      style={{ color, borderColor: `${color}66`, background: `${color}14` }}
                     >
                       {religion.image ? (
-                        <img src={religion.image} alt="" className="h-3.5 w-3.5 object-contain" />
+                        <span
+                          className="inline-block h-3.5 w-3.5"
+                          style={{
+                            backgroundColor: color,
+                            WebkitMaskImage: `url(${religion.image})`,
+                            maskImage: `url(${religion.image})`,
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                          }}
+                          aria-hidden
+                        />
                       ) : (
-                        <span aria-hidden>{religion.symbol}</span>
+                        <span aria-hidden style={{ color }}>{religion.symbol}</span>
                       )}
                       {religion.name}
                     </span>
