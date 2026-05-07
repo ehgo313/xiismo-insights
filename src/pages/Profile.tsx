@@ -120,12 +120,17 @@ const Profile = () => {
                   {religion && (
                     <span
                       className="text-xs font-medium px-3 py-1 rounded-full border inline-flex items-center gap-1.5"
-                      style={{ color: religion.color, borderColor: `${religion.color}66`, background: `${religion.color}14` }}
+                      style={{ color, borderColor: `${color}66`, background: `${color}14` }}
                     >
                       {religion.image ? (
-                        <img src={religion.image} alt="" className="h-3.5 w-3.5 object-contain" />
+                        <img
+                          src={religion.image}
+                          alt=""
+                          className="h-3.5 w-3.5 object-contain"
+                          style={{ filter: `drop-shadow(0 0 0 ${color})` }}
+                        />
                       ) : (
-                        <span aria-hidden>{religion.symbol}</span>
+                        <span aria-hidden style={{ color }}>{religion.symbol}</span>
                       )}
                       {religion.name}
                     </span>
