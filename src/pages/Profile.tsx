@@ -123,11 +123,20 @@ const Profile = () => {
                       style={{ color, borderColor: `${color}66`, background: `${color}14` }}
                     >
                       {religion.image ? (
-                        <img
-                          src={religion.image}
-                          alt=""
-                          className="h-3.5 w-3.5 object-contain"
-                          style={{ filter: `drop-shadow(0 0 0 ${color})` }}
+                        <span
+                          className="inline-block h-3.5 w-3.5"
+                          style={{
+                            backgroundColor: color,
+                            WebkitMaskImage: `url(${religion.image})`,
+                            maskImage: `url(${religion.image})`,
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                          }}
+                          aria-hidden
                         />
                       ) : (
                         <span aria-hidden style={{ color }}>{religion.symbol}</span>
