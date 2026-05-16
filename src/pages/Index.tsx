@@ -42,6 +42,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-hero">
       {/* Header */}
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2274832483580027"
+     crossorigin="anonymous"></script>
       <header className="border-b border-border/60 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
