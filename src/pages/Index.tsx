@@ -101,7 +101,7 @@ const Index = () => {
               size="lg"
               className="h-12 px-8 bg-discord hover:bg-discord/90 text-white"
             >
-              <a href="https://discord.gg/v2r6TRrq" target="_blank" rel="noopener noreferrer">
+              <a href="https://discord.gg/jg5mFAs9kz" target="_blank" rel="noopener noreferrer">
                 <DiscordIcon className="mr-2 h-5 w-5" />
                 Servidor no Discord
               </a>
