@@ -16,13 +16,17 @@ const DiscordIcon = (props: React.SVGProps<SVGSVGElement>) => (
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import logo from "@/assets/xiismo-logo.png";
+import defaultLogo from "@/assets/xiismo-logo.png";
+import MapSection from "@/components/MapSection";
+import { useSiteSettings } from "@/lib/siteSettings";
 
 type Article = { id: string; title: string; slug: string; excerpt: string | null; featured: boolean };
 
 const Index = () => {
   const [query, setQuery] = useState("");
   const [articles, setArticles] = useState<Article[]>([]);
+  const settings = useSiteSettings();
+  const logo = settings.logo_url || defaultLogo;
 
   useEffect(() => {
     supabase
@@ -43,7 +47,7 @@ const Index = () => {
     <div className="min-h-screen bg-hero">
       {/* Header */}
       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2274832483580027"
-     crossorigin="anonymous"></script>
+     crossOrigin="anonymous"></script>
       <header className="border-b border-border/60 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
@@ -147,6 +151,9 @@ const Index = () => {
           </div>
         )}
       </section>
+
+      {/* Map */}
+      <MapSection />
 
       {/* About */}
       <section id="sobre" className="container pb-24">
