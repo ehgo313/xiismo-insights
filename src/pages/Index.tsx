@@ -152,6 +152,9 @@ const Index = () => {
         )}
       </section>
 
+      {/* Map */}
+      <MapSection />
+
       {/* About */}
       <section id="sobre" className="container pb-24">
         <div className="max-w-3xl mx-auto">
