@@ -72,7 +72,7 @@ const MapSection = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {markers.map((m) => (
-            <Marker key={m.id} position={[m.lat, m.lng]} icon={m.type === "mosque" ? mosqueIcon : L.Icon.Default.prototype as L.Icon}>
+            <Marker key={m.id} position={[m.lat, m.lng]} {...(m.type === "mosque" ? { icon: mosqueIcon } : {})}>
               <Popup>
                 {m.type === "person" && m.profile_username ? (
                   <div className="flex items-center gap-2">
