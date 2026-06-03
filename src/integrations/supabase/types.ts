@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_keys: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          key: string
+          label: string
+          permissions: Json
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          permissions?: Json
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          permissions?: Json
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           author_username: string | null
@@ -65,6 +92,45 @@ export type Database = {
         }
         Relationships: []
       }
+      map_markers: {
+        Row: {
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          mosque_address: string | null
+          mosque_name: string | null
+          mosque_photo_url: string | null
+          profile_username: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          mosque_address?: string | null
+          mosque_name?: string | null
+          mosque_photo_url?: string | null
+          profile_username?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          mosque_address?: string | null
+          mosque_name?: string | null
+          mosque_photo_url?: string | null
+          profile_username?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -110,6 +176,24 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string | null
         }
         Relationships: []
       }
