@@ -92,6 +92,51 @@ export type Database = {
         }
         Relationships: []
       }
+      city_pins: {
+        Row: {
+          address: string | null
+          city: string
+          created_at: string
+          id: string
+          kind: string
+          lat: number
+          link: string | null
+          lng: number
+          mosque_name: string | null
+          notes: string | null
+          profile_username: string | null
+          state: string | null
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          created_at?: string
+          id?: string
+          kind: string
+          lat: number
+          link?: string | null
+          lng: number
+          mosque_name?: string | null
+          notes?: string | null
+          profile_username?: string | null
+          state?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          lat?: number
+          link?: string | null
+          lng?: number
+          mosque_name?: string | null
+          notes?: string | null
+          profile_username?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
       map_markers: {
         Row: {
           created_at: string
