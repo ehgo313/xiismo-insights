@@ -10,8 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, LogOut, Copy } from "lucide-react";
 import { RELIGIONS, PROFILE_COLORS, DEFAULT_PROFILE_COLOR } from "@/lib/profileMeta";
-import MapPicker from "@/components/MapPicker";
-import { fetchSiteSettings, saveSiteSetting } from "@/lib/siteSettings";
+import { searchCities, findCity } from "@/lib/brazilCities";
 
 const ADMIN_PASSWORD = "Muhammad11_1213?";
 const STORAGE_KEY = "admin_unlocked";
@@ -22,15 +21,13 @@ type Perms = {
   articles: boolean;
   profiles: boolean;
   markers: boolean;
-  settings: boolean;
   keys: boolean;
 };
-const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, settings: true, keys: true };
+const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, keys: true };
 const PERM_LABELS: { key: keyof Perms; label: string }[] = [
   { key: "articles", label: "Gerir artigos" },
   { key: "profiles", label: "Gerir perfis" },
   { key: "markers", label: "Gerir mapa (mesquitas/pessoas)" },
-  { key: "settings", label: "Alterar logo e OG image" },
   { key: "keys", label: "Criar chaves de acesso" },
 ];
 
@@ -45,10 +42,10 @@ type Profile = {
   description: string | null; religion: string | null; profile_color: string | null;
   tiktok: string | null; instagram: string | null; twitter: string | null;
 };
-type MapMarker = {
-  id: string; type: "person" | "mosque"; lat: number; lng: number;
-  profile_username: string | null; mosque_name: string | null;
-  mosque_photo_url: string | null; mosque_address: string | null;
+type CityPin = {
+  id: string; city: string; state: string | null; lat: number; lng: number;
+  kind: "profile" | "mosque"; profile_username: string | null;
+  mosque_name: string | null; address: string | null; link: string | null; notes: string | null;
 };
 type AccessKey = { id: string; key: string; label: string; permissions: Perms; active: boolean; created_at: string };
 
@@ -65,46 +62,43 @@ const emptyProfile: Omit<Profile, "id"> = {
   username: "", display_name: "", avatar_url: null, role: "Membro", description: "", religion: "",
   profile_color: DEFAULT_PROFILE_COLOR, tiktok: "", instagram: "", twitter: "",
 };
-const emptyMarker: Omit<MapMarker, "id"> = {
-  type: "mosque", lat: -14.235, lng: -51.9253, profile_username: null,
-  mosque_name: "", mosque_photo_url: null, mosque_address: "",
+const emptyPin: Omit<CityPin, "id"> = {
+  city: "", state: "", lat: 0, lng: 0, kind: "profile",
+  profile_username: null, mosque_name: "", address: "", link: "", notes: "",
 };
 
-type Tab = "articles" | "profiles" | "markers" | "settings" | "keys";
+type Tab = "articles" | "profiles" | "pins" | "keys";
 
 const Admin = () => {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(STORAGE_KEY) === "1");
   const [perms, setPerms] = useState<Perms>(() => {
-    try { return JSON.parse(sessionStorage.getItem(PERMS_KEY) || "") || ALL_PERMS; } catch { return ALL_PERMS; }
+    try { return { ...ALL_PERMS, ...(JSON.parse(sessionStorage.getItem(PERMS_KEY) || "{}") || {}) }; } catch { return ALL_PERMS; }
   });
   const [pwd, setPwd] = useState("");
   const [tab, setTab] = useState<Tab>("articles");
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [markers, setMarkers] = useState<MapMarker[]>([]);
+  const [pins, setPins] = useState<CityPin[]>([]);
   const [keys, setKeys] = useState<AccessKey[]>([]);
 
   const [editingArticle, setEditingArticle] = useState<(Partial<Article> & Omit<Article, "id">) | null>(null);
   const [editingProfile, setEditingProfile] = useState<(Partial<Profile> & Omit<Profile, "id">) | null>(null);
-  const [editingMarker, setEditingMarker] = useState<(Partial<MapMarker> & Omit<MapMarker, "id">) | null>(null);
+  const [editingPin, setEditingPin] = useState<(Partial<CityPin> & Omit<CityPin, "id">) | null>(null);
   const [editingKey, setEditingKey] = useState<{ label: string; permissions: Perms } | null>(null);
 
-  const [logoUrl, setLogoUrl] = useState<string>("");
-  const [ogUrl, setOgUrl] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!unlocked) return;
     if (perms.articles) loadArticles();
-    loadProfiles(); // always (used as autor selector)
-    if (perms.markers) loadMarkers();
+    loadProfiles();
+    if (perms.markers) loadPins();
     if (perms.keys) loadKeys();
-    if (perms.settings) fetchSiteSettings().then((s) => { setLogoUrl(s.logo_url ?? ""); setOgUrl(s.og_image_url ?? ""); });
-    // pick initial tab user has access to
-    const order: Tab[] = ["articles", "profiles", "markers", "settings", "keys"];
-    const first = order.find((t) => (perms as any)[t]);
-    if (first && !(perms as any)[tab]) setTab(first);
+    const order: Tab[] = ["articles", "profiles", "pins", "keys"];
+    const permKey: Record<Tab, keyof Perms> = { articles: "articles", profiles: "profiles", pins: "markers", keys: "keys" };
+    const first = order.find((t) => perms[permKey[t]]);
+    if (first && !perms[permKey[tab]]) setTab(first);
   }, [unlocked]);
 
   const loadArticles = async () => {
@@ -115,9 +109,9 @@ const Admin = () => {
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (error) toast.error(error.message); else setProfiles(data as Profile[]);
   };
-  const loadMarkers = async () => {
-    const { data, error } = await supabase.from("map_markers").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message); else setMarkers(data as MapMarker[]);
+  const loadPins = async () => {
+    const { data, error } = await supabase.from("city_pins").select("*").order("city", { ascending: true });
+    if (error) toast.error(error.message); else setPins(data as CityPin[]);
   };
   const loadKeys = async () => {
     const { data, error } = await supabase.from("access_keys").select("*").order("created_at", { ascending: false });
@@ -166,28 +160,34 @@ const Admin = () => {
     if (error) toast.error(error.message); else { toast.success("Eliminado"); loadProfiles(); }
   };
 
-  const saveMarker = async () => {
-    if (!editingMarker) return;
-    const m = editingMarker;
-    if (m.type === "person" && !m.profile_username) return toast.error("Escolha um perfil");
-    if (m.type === "mosque" && !m.mosque_name) return toast.error("Nome da mesquita obrigatório");
+  const savePin = async () => {
+    if (!editingPin) return;
+    const p = editingPin;
+    if (!p.city) return toast.error("Cidade obrigatória");
+    if (p.kind === "profile" && !p.profile_username) return toast.error("Escolhe um perfil");
+    if (p.kind === "mosque" && !p.mosque_name) return toast.error("Nome da mesquita obrigatório");
+    let { lat, lng, state } = p;
+    if (!lat || !lng) {
+      const known = findCity(p.city);
+      if (!known) return toast.error("Cidade não encontrada. Preencha lat/lng manualmente.");
+      lat = known.lat; lng = known.lng; state = state || known.state;
+    }
     const payload = {
-      type: m.type, lat: m.lat, lng: m.lng,
-      profile_username: m.type === "person" ? m.profile_username : null,
-      mosque_name: m.type === "mosque" ? m.mosque_name : null,
-      mosque_photo_url: m.type === "mosque" ? m.mosque_photo_url : null,
-      mosque_address: m.type === "mosque" ? m.mosque_address : null,
+      city: p.city, state: state || null, lat, lng, kind: p.kind,
+      profile_username: p.kind === "profile" ? p.profile_username : null,
+      mosque_name: p.kind === "mosque" ? p.mosque_name : null,
+      address: p.address || null, link: p.link || null, notes: p.notes || null,
     };
-    const { error } = m.id
-      ? await supabase.from("map_markers").update(payload).eq("id", m.id)
-      : await supabase.from("map_markers").insert(payload);
+    const { error } = p.id
+      ? await supabase.from("city_pins").update(payload).eq("id", p.id)
+      : await supabase.from("city_pins").insert(payload);
     if (error) toast.error(error.message);
-    else { toast.success("Guardado"); setEditingMarker(null); loadMarkers(); }
+    else { toast.success("Guardado"); setEditingPin(null); loadPins(); }
   };
-  const removeMarker = async (id: string) => {
-    if (!confirm("Eliminar?")) return;
-    const { error } = await supabase.from("map_markers").delete().eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Eliminado"); loadMarkers(); }
+  const removePin = async (id: string) => {
+    if (!confirm("Eliminar pino?")) return;
+    const { error } = await supabase.from("city_pins").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Eliminado"); loadPins(); }
   };
 
   const saveKey = async () => {
@@ -208,38 +208,16 @@ const Admin = () => {
     if (error) toast.error(error.message); else loadKeys();
   };
 
-  const uploadToBucket = async (file: File, bucket = "avatars") => {
-    const ext = file.name.split(".").pop();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
-    if (error) throw error;
-    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-  };
   const uploadAvatar = async (file: File) => {
     if (!editingProfile) return;
     setUploading(true);
     try {
-      const url = await uploadToBucket(file);
+      const ext = file.name.split(".").pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: false });
+      if (error) throw error;
+      const url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
       setEditingProfile({ ...editingProfile, avatar_url: url });
-    } catch (e: any) { toast.error(e.message); }
-    setUploading(false);
-  };
-  const uploadMosquePhoto = async (file: File) => {
-    if (!editingMarker) return;
-    setUploading(true);
-    try {
-      const url = await uploadToBucket(file);
-      setEditingMarker({ ...editingMarker, mosque_photo_url: url });
-    } catch (e: any) { toast.error(e.message); }
-    setUploading(false);
-  };
-  const uploadSiteAsset = async (file: File, kind: "logo" | "og") => {
-    setUploading(true);
-    try {
-      const url = await uploadToBucket(file);
-      if (kind === "logo") { setLogoUrl(url); await saveSiteSetting("logo_url", url); }
-      else { setOgUrl(url); await saveSiteSetting("og_image_url", url); }
-      toast.success("Atualizado");
     } catch (e: any) { toast.error(e.message); }
     setUploading(false);
   };
@@ -255,7 +233,7 @@ const Admin = () => {
     }
     const { data } = await supabase.from("access_keys").select("*").eq("key", pwd).eq("active", true).maybeSingle();
     if (data) {
-      const p = { ...{ articles: false, profiles: false, markers: false, settings: false, keys: false }, ...(data as any).permissions };
+      const p = { articles: false, profiles: false, markers: false, keys: false, ...((data as any).permissions || {}) };
       sessionStorage.setItem(STORAGE_KEY, "1");
       sessionStorage.setItem(PERMS_KEY, JSON.stringify(p));
       setPerms(p);
@@ -283,8 +261,7 @@ const Admin = () => {
   const tabs: { key: Tab; label: string; show: boolean }[] = [
     { key: "articles", label: "Artigos", show: perms.articles },
     { key: "profiles", label: "Perfis", show: perms.profiles },
-    { key: "markers", label: "Mapa", show: perms.markers },
-    { key: "settings", label: "Logo / OG", show: perms.settings },
+    { key: "pins", label: "Mapa", show: perms.markers },
     { key: "keys", label: "Chaves", show: perms.keys },
   ];
 
@@ -300,7 +277,7 @@ const Admin = () => {
         </div>
         <div className="container flex gap-2 pb-3 flex-wrap">
           {tabs.filter((t) => t.show).map((t) => (
-            <Button key={t.key} size="sm" variant={tab === t.key ? "default" : "outline"} onClick={() => { setTab(t.key); setEditingArticle(null); setEditingProfile(null); setEditingMarker(null); setEditingKey(null); }}>
+            <Button key={t.key} size="sm" variant={tab === t.key ? "default" : "outline"} onClick={() => { setTab(t.key); setEditingArticle(null); setEditingProfile(null); setEditingPin(null); setEditingKey(null); }}>
               {t.label}
             </Button>
           ))}
@@ -431,88 +408,83 @@ const Admin = () => {
           </>
         ))}
 
-        {/* MARKERS */}
-        {tab === "markers" && perms.markers && (editingMarker ? (
+        {/* PINS */}
+        {tab === "pins" && perms.markers && (editingPin ? (
           <div className="max-w-2xl mx-auto bg-card border border-border rounded-md p-6 space-y-4">
-            <h2 className="text-xl font-semibold">{editingMarker.id ? "Editar" : "Novo"} marcador</h2>
+            <h2 className="text-xl font-semibold">{editingPin.id ? "Editar" : "Novo"} pino no mapa</h2>
             <div><Label>Tipo</Label>
-              <Select value={editingMarker.type} onValueChange={(v) => setEditingMarker({ ...editingMarker, type: v as any })}>
+              <Select value={editingPin.kind} onValueChange={(v: "profile" | "mosque") => setEditingPin({ ...editingPin, kind: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="mosque">Mesquita</SelectItem><SelectItem value="person">Pessoa</SelectItem></SelectContent>
+                <SelectContent>
+                  <SelectItem value="profile">Perfil xiita</SelectItem>
+                  <SelectItem value="mosque">Mesquita</SelectItem>
+                </SelectContent>
               </Select>
             </div>
-            {editingMarker.type === "person" ? (
+            <div>
+              <Label>Cidade</Label>
+              <Input placeholder="Pesquisar qualquer cidade do Brasil..." value={editingPin.city}
+                onChange={(e) => setEditingPin({ ...editingPin, city: e.target.value })} />
+              {editingPin.city && searchCities(editingPin.city, 6).length > 0 &&
+                !searchCities(editingPin.city, 1).some((c) => c.name.toLowerCase() === editingPin.city.toLowerCase()) && (
+                <div className="mt-1 border border-border rounded-md bg-popover max-h-56 overflow-auto">
+                  {searchCities(editingPin.city, 8).map((c) => (
+                    <button type="button" key={`${c.name}-${c.state}`}
+                      onClick={() => setEditingPin({ ...editingPin, city: c.name, state: c.state, lat: c.lat, lng: c.lng })}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent flex justify-between">
+                      <span>{c.name}</span>
+                      <span className="text-muted-foreground text-xs">{c.state}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>Estado</Label><Input value={editingPin.state ?? ""} onChange={(e) => setEditingPin({ ...editingPin, state: e.target.value })} /></div>
+              <div><Label>Latitude</Label><Input type="number" step="any" value={editingPin.lat || ""} onChange={(e) => setEditingPin({ ...editingPin, lat: parseFloat(e.target.value) })} /></div>
+              <div><Label>Longitude</Label><Input type="number" step="any" value={editingPin.lng || ""} onChange={(e) => setEditingPin({ ...editingPin, lng: parseFloat(e.target.value) })} /></div>
+            </div>
+            {editingPin.kind === "profile" ? (
               <div><Label>Perfil</Label>
-                <Select value={editingMarker.profile_username ?? "__none"} onValueChange={(v) => setEditingMarker({ ...editingMarker, profile_username: v === "__none" ? null : v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar perfil" /></SelectTrigger>
-                  <SelectContent><SelectItem value="__none">—</SelectItem>
+                <Select value={editingPin.profile_username ?? "__none"} onValueChange={(v) => setEditingPin({ ...editingPin, profile_username: v === "__none" ? null : v })}>
+                  <SelectTrigger><SelectValue placeholder="Escolher perfil" /></SelectTrigger>
+                  <SelectContent><SelectItem value="__none">Nenhum</SelectItem>
                     {profiles.map((p) => <SelectItem key={p.id} value={p.username}>{p.display_name} (@{p.username})</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             ) : (
               <>
-                <div><Label>Nome da mesquita</Label><Input value={editingMarker.mosque_name ?? ""} onChange={(e) => setEditingMarker({ ...editingMarker, mosque_name: e.target.value })} /></div>
-                <div><Label>Endereço</Label><Input value={editingMarker.mosque_address ?? ""} onChange={(e) => setEditingMarker({ ...editingMarker, mosque_address: e.target.value })} /></div>
-                <div className="flex items-center gap-4">
-                  {editingMarker.mosque_photo_url && <img src={editingMarker.mosque_photo_url} alt="" className="h-20 w-20 rounded object-cover border border-border" />}
-                  <div><Label>Foto da mesquita</Label><Input type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && uploadMosquePhoto(e.target.files[0])} /></div>
-                </div>
+                <div><Label>Nome da mesquita</Label><Input value={editingPin.mosque_name ?? ""} onChange={(e) => setEditingPin({ ...editingPin, mosque_name: e.target.value })} /></div>
+                <div><Label>Endereço</Label><Input value={editingPin.address ?? ""} onChange={(e) => setEditingPin({ ...editingPin, address: e.target.value })} /></div>
+                <div><Label>Link (site, Google Maps)</Label><Input value={editingPin.link ?? ""} onChange={(e) => setEditingPin({ ...editingPin, link: e.target.value })} /></div>
               </>
             )}
-            <div>
-              <Label>Posição (clique no mapa)</Label>
-              <MapPicker lat={editingMarker.lat} lng={editingMarker.lng} onPick={(la, ln) => setEditingMarker({ ...editingMarker, lat: la, lng: ln })} />
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <Input type="number" step="0.000001" value={editingMarker.lat} onChange={(e) => setEditingMarker({ ...editingMarker, lat: parseFloat(e.target.value) })} />
-                <Input type="number" step="0.000001" value={editingMarker.lng} onChange={(e) => setEditingMarker({ ...editingMarker, lng: parseFloat(e.target.value) })} />
-              </div>
-            </div>
-            <div className="flex gap-2"><Button onClick={saveMarker}>Guardar</Button><Button variant="outline" onClick={() => setEditingMarker(null)}>Cancelar</Button></div>
+            <div><Label>Notas (opcional)</Label><Textarea rows={2} value={editingPin.notes ?? ""} onChange={(e) => setEditingPin({ ...editingPin, notes: e.target.value })} /></div>
+            <div className="flex gap-2"><Button onClick={savePin}>Guardar</Button><Button variant="outline" onClick={() => setEditingPin(null)}>Cancelar</Button></div>
           </div>
         ) : (
           <>
-            <Button onClick={() => setEditingMarker(emptyMarker)} className="mb-6"><Plus className="h-4 w-4 mr-2" />Novo marcador</Button>
+            <Button onClick={() => setEditingPin(emptyPin)} className="mb-6"><Plus className="h-4 w-4 mr-2" />Novo pino</Button>
             <div className="space-y-2">
-              {markers.map((m) => (
-                <div key={m.id} className="flex items-center justify-between bg-card border border-border rounded-md p-4">
+              {pins.map((p) => (
+                <div key={p.id} className="flex items-center justify-between bg-card border border-border rounded-md p-4">
                   <div>
-                    <div className="font-semibold">{m.type === "mosque" ? m.mosque_name : `@${m.profile_username}`}
-                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-foreground/10">{m.type === "mosque" ? "Mesquita" : "Pessoa"}</span>
+                    <div className="font-semibold">{p.city}{p.state && <span className="text-muted-foreground"> — {p.state}</span>}
+                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-foreground/10">{p.kind === "profile" ? "Perfil" : "Mesquita"}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">{m.lat.toFixed(4)}, {m.lng.toFixed(4)}{m.mosque_address ? ` · ${m.mosque_address}` : ""}</div>
+                    <div className="text-sm text-muted-foreground">{p.kind === "profile" ? `@${p.profile_username}` : p.mosque_name}</div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditingMarker(m)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="outline" onClick={() => removeMarker(m.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingPin(p)}><Pencil className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="outline" onClick={() => removePin(p.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
               ))}
+              {pins.length === 0 && <p className="text-muted-foreground text-sm">Sem pinos ainda.</p>}
             </div>
           </>
         ))}
-
-        {/* SETTINGS */}
-        {tab === "settings" && perms.settings && (
-          <div className="max-w-2xl mx-auto bg-card border border-border rounded-md p-6 space-y-6">
-            <h2 className="text-xl font-semibold">Logo e imagem OG</h2>
-            <div className="flex items-center gap-4">
-              {logoUrl && <img src={logoUrl} alt="" className="h-20 w-20 object-contain border border-border rounded" />}
-              <div className="flex-1">
-                <Label>Logo do site</Label>
-                <Input type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && uploadSiteAsset(e.target.files[0], "logo")} />
-                <p className="text-xs text-muted-foreground mt-1">Substitui o logo exibido no topo e como favicon (após recarregar).</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              {ogUrl && <img src={ogUrl} alt="" className="h-20 w-32 object-cover border border-border rounded" />}
-              <div className="flex-1">
-                <Label>OG image (preview ao partilhar)</Label>
-                <Input type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && uploadSiteAsset(e.target.files[0], "og")} />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* KEYS */}
         {tab === "keys" && perms.keys && (editingKey ? (
@@ -534,7 +506,7 @@ const Admin = () => {
           </div>
         ) : (
           <>
-            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, settings: false, keys: false } })} className="mb-6">
+            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, keys: false } })} className="mb-6">
               <Plus className="h-4 w-4 mr-2" />Criar chave de acesso
             </Button>
             <div className="space-y-2">
