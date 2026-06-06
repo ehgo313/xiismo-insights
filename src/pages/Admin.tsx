@@ -69,7 +69,8 @@ const emptyPin: Omit<CityPin, "id"> = {
   profile_username: null, mosque_name: "", address: "", link: "", notes: "",
 };
 
-type Tab = "articles" | "profiles" | "pins" | "keys";
+type Tab = "articles" | "profiles" | "pins" | "keys" | "conversions";
+type Conversion = { id: string; name: string; city: string; whatsapp: string; created_at: string };
 
 const Admin = () => {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(STORAGE_KEY) === "1");
