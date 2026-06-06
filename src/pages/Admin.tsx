@@ -277,6 +277,7 @@ const Admin = () => {
     { key: "profiles", label: "Perfis", show: perms.profiles },
     { key: "pins", label: "Mapa", show: perms.markers },
     { key: "keys", label: "Chaves", show: perms.keys },
+    { key: "conversions", label: "Conversões", show: perms.conversions },
   ];
 
   return (
