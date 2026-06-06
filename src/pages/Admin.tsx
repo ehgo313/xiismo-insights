@@ -118,6 +118,15 @@ const Admin = () => {
     const { data, error } = await supabase.from("city_pins").select("*").order("city", { ascending: true });
     if (error) toast.error(error.message); else setPins(data as CityPin[]);
   };
+  const loadConversions = async () => {
+    const { data, error } = await supabase.from("conversion_requests").select("*").order("created_at", { ascending: false });
+    if (error) toast.error(error.message); else setConversions(data as Conversion[]);
+  };
+  const removeConversion = async (id: string) => {
+    if (!confirm("Eliminar pedido?")) return;
+    const { error } = await supabase.from("conversion_requests").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Eliminado"); loadConversions(); }
+  };
   const loadKeys = async () => {
     const { data, error } = await supabase.from("access_keys").select("*").order("created_at", { ascending: false });
     if (error) toast.error(error.message); else setKeys((data as any[]).map((k) => ({ ...k, permissions: k.permissions || {} })));
