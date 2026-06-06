@@ -22,13 +22,15 @@ type Perms = {
   profiles: boolean;
   markers: boolean;
   keys: boolean;
+  conversions: boolean;
 };
-const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, keys: true };
+const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, keys: true, conversions: true };
 const PERM_LABELS: { key: keyof Perms; label: string }[] = [
   { key: "articles", label: "Gerir artigos" },
   { key: "profiles", label: "Gerir perfis" },
   { key: "markers", label: "Gerir mapa (mesquitas/pessoas)" },
   { key: "keys", label: "Criar chaves de acesso" },
+  { key: "conversions", label: "Ver pedidos de conversão" },
 ];
 
 type Article = {
@@ -67,7 +69,8 @@ const emptyPin: Omit<CityPin, "id"> = {
   profile_username: null, mosque_name: "", address: "", link: "", notes: "",
 };
 
-type Tab = "articles" | "profiles" | "pins" | "keys";
+type Tab = "articles" | "profiles" | "pins" | "keys" | "conversions";
+type Conversion = { id: string; name: string; city: string; whatsapp: string; created_at: string };
 
 const Admin = () => {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(STORAGE_KEY) === "1");
@@ -81,6 +84,7 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [pins, setPins] = useState<CityPin[]>([]);
   const [keys, setKeys] = useState<AccessKey[]>([]);
+  const [conversions, setConversions] = useState<Conversion[]>([]);
 
   const [editingArticle, setEditingArticle] = useState<(Partial<Article> & Omit<Article, "id">) | null>(null);
   const [editingProfile, setEditingProfile] = useState<(Partial<Profile> & Omit<Profile, "id">) | null>(null);
@@ -95,8 +99,9 @@ const Admin = () => {
     loadProfiles();
     if (perms.markers) loadPins();
     if (perms.keys) loadKeys();
-    const order: Tab[] = ["articles", "profiles", "pins", "keys"];
-    const permKey: Record<Tab, keyof Perms> = { articles: "articles", profiles: "profiles", pins: "markers", keys: "keys" };
+    if (perms.conversions) loadConversions();
+    const order: Tab[] = ["articles", "profiles", "pins", "keys", "conversions"];
+    const permKey: Record<Tab, keyof Perms> = { articles: "articles", profiles: "profiles", pins: "markers", keys: "keys", conversions: "conversions" };
     const first = order.find((t) => perms[permKey[t]]);
     if (first && !perms[permKey[tab]]) setTab(first);
   }, [unlocked]);
@@ -112,6 +117,15 @@ const Admin = () => {
   const loadPins = async () => {
     const { data, error } = await supabase.from("city_pins").select("*").order("city", { ascending: true });
     if (error) toast.error(error.message); else setPins(data as CityPin[]);
+  };
+  const loadConversions = async () => {
+    const { data, error } = await supabase.from("conversion_requests").select("*").order("created_at", { ascending: false });
+    if (error) toast.error(error.message); else setConversions(data as Conversion[]);
+  };
+  const removeConversion = async (id: string) => {
+    if (!confirm("Eliminar pedido?")) return;
+    const { error } = await supabase.from("conversion_requests").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Eliminado"); loadConversions(); }
   };
   const loadKeys = async () => {
     const { data, error } = await supabase.from("access_keys").select("*").order("created_at", { ascending: false });
@@ -263,6 +277,7 @@ const Admin = () => {
     { key: "profiles", label: "Perfis", show: perms.profiles },
     { key: "pins", label: "Mapa", show: perms.markers },
     { key: "keys", label: "Chaves", show: perms.keys },
+    { key: "conversions", label: "Conversões", show: perms.conversions },
   ];
 
   return (
@@ -506,7 +521,7 @@ const Admin = () => {
           </div>
         ) : (
           <>
-            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, keys: false } })} className="mb-6">
+            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, keys: false, conversions: false } })} className="mb-6">
               <Plus className="h-4 w-4 mr-2" />Criar chave de acesso
             </Button>
             <div className="space-y-2">
@@ -533,6 +548,28 @@ const Admin = () => {
             </div>
           </>
         ))}
+
+        {/* CONVERSIONS */}
+        {tab === "conversions" && perms.conversions && (
+          <div className="space-y-2">
+            {conversions.length === 0 && <p className="text-muted-foreground text-sm">Sem pedidos ainda.</p>}
+            {conversions.map((c) => (
+              <div key={c.id} className="flex items-center justify-between bg-card border border-border rounded-md p-4">
+                <div>
+                  <div className="font-semibold">{c.name}</div>
+                  <div className="text-sm text-muted-foreground">{c.city} · WhatsApp: {c.whatsapp}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString("pt-BR")}</div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => removeConversion(c.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

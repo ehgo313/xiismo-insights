@@ -137,6 +137,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_requests: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          name: string
+          whatsapp: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          name: string
+          whatsapp: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       map_markers: {
         Row: {
           created_at: string
