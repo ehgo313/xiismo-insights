@@ -548,6 +548,28 @@ const Admin = () => {
             </div>
           </>
         ))}
+
+        {/* CONVERSIONS */}
+        {tab === "conversions" && perms.conversions && (
+          <div className="space-y-2">
+            {conversions.length === 0 && <p className="text-muted-foreground text-sm">Sem pedidos ainda.</p>}
+            {conversions.map((c) => (
+              <div key={c.id} className="flex items-center justify-between bg-card border border-border rounded-md p-4">
+                <div>
+                  <div className="font-semibold">{c.name}</div>
+                  <div className="text-sm text-muted-foreground">{c.city} · WhatsApp: {c.whatsapp}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString("pt-BR")}</div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => removeConversion(c.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
