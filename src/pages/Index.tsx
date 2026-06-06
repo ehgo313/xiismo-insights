@@ -53,9 +53,21 @@ const Index = () => {
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#artigos" className="hover:text-foreground transition-colors">Artigos</a>
-            
             <a href="#sobre" className="hover:text-foreground transition-colors">Sobre</a>
           </nav>
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" aria-label="Abrir menu">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-64">
+              <nav className="flex flex-col gap-4 mt-8 text-lg">
+                <a href="#artigos" className="hover:text-foreground transition-colors">Artigos</a>
+                <a href="#sobre" className="hover:text-foreground transition-colors">Sobre</a>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
