@@ -508,7 +508,7 @@ const Admin = () => {
           </div>
         ) : (
           <>
-            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, keys: false } })} className="mb-6">
+            <Button onClick={() => setEditingKey({ label: "", permissions: { articles: true, profiles: false, markers: false, keys: false, conversions: false } })} className="mb-6">
               <Plus className="h-4 w-4 mr-2" />Criar chave de acesso
             </Button>
             <div className="space-y-2">
