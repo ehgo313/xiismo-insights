@@ -22,13 +22,15 @@ type Perms = {
   profiles: boolean;
   markers: boolean;
   keys: boolean;
+  conversions: boolean;
 };
-const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, keys: true };
+const ALL_PERMS: Perms = { articles: true, profiles: true, markers: true, keys: true, conversions: true };
 const PERM_LABELS: { key: keyof Perms; label: string }[] = [
   { key: "articles", label: "Gerir artigos" },
   { key: "profiles", label: "Gerir perfis" },
   { key: "markers", label: "Gerir mapa (mesquitas/pessoas)" },
   { key: "keys", label: "Criar chaves de acesso" },
+  { key: "conversions", label: "Ver pedidos de conversão" },
 ];
 
 type Article = {
