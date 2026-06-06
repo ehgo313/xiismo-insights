@@ -84,6 +84,7 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [pins, setPins] = useState<CityPin[]>([]);
   const [keys, setKeys] = useState<AccessKey[]>([]);
+  const [conversions, setConversions] = useState<Conversion[]>([]);
 
   const [editingArticle, setEditingArticle] = useState<(Partial<Article> & Omit<Article, "id">) | null>(null);
   const [editingProfile, setEditingProfile] = useState<(Partial<Profile> & Omit<Profile, "id">) | null>(null);
@@ -98,8 +99,9 @@ const Admin = () => {
     loadProfiles();
     if (perms.markers) loadPins();
     if (perms.keys) loadKeys();
-    const order: Tab[] = ["articles", "profiles", "pins", "keys"];
-    const permKey: Record<Tab, keyof Perms> = { articles: "articles", profiles: "profiles", pins: "markers", keys: "keys" };
+    if (perms.conversions) loadConversions();
+    const order: Tab[] = ["articles", "profiles", "pins", "keys", "conversions"];
+    const permKey: Record<Tab, keyof Perms> = { articles: "articles", profiles: "profiles", pins: "markers", keys: "keys", conversions: "conversions" };
     const first = order.find((t) => perms[permKey[t]]);
     if (first && !perms[permKey[tab]]) setTab(first);
   }, [unlocked]);
