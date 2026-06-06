@@ -99,16 +99,15 @@ const Index = () => {
                 Canal no WhatsApp
               </a>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              className="h-12 px-8 bg-discord hover:bg-discord/90 text-white"
-            >
-              <a href="https://discord.gg/jg5mFAs9kz" target="_blank" rel="noopener noreferrer">
-                <DiscordIcon className="mr-2 h-5 w-5" />
-                Servidor no Discord
-              </a>
-            </Button>
+            <ConvertDialog
+              trigger={
+                <Button size="lg" className="h-12 px-8">
+                  <HeartHandshake className="mr-2 h-5 w-5" />
+                  Quero me converter
+                </Button>
+              }
+            />
+
           </div>
         </div>
       </section>
